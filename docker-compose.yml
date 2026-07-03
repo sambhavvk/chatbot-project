@@ -1,0 +1,61 @@
+# =============================================================================
+# Docker Compose - Local development environment
+# Includes:
+#   - Chatbot API server (FastAPI)
+#   - localstack for DynamoDB emulation
+# =============================================================================
+
+version: "3.8"
+
+services:
+  # Chatbot API server
+  chatbot-api:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "8080:8080"
+    environment:
+      - DYNAMODB_ENDPOINT=http://localstack:4566
+      - MODEL_PATH=models/intent_model
+      - AWS_ACCESS_KEY_ID=fake
+      - AWS_SECRET_ACCESS_KEY=fake
+      - AWS_DEFAULT_REGION=eu-west-2
+    volumes:
+      - ./models:/app/models
+      - ./src:/app/src
+      - ./data:/app/data
+    depends_on:
+      - localstack
+    restart: unless-stopped
+
+  # localstack - AWS service emulator
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"            # Main gateway
+      - "4510-4559:4510-4559"  # Extended services range
+    environment:
+      - SERVICES=dynamodb
+      - DEFAULT_REGION=eu-west-2
+      - DATA_DIR=/tmp/localstack/data
+      - PERSISTENCE=1
+    volumes:
+      - localstack-data:/tmp/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  # Frontend served via nginx (optional - can also open frontend/index.html directly)
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - chatbot-api
+    restart: unless-stopped
+
+volumes:
+  localstack-data:

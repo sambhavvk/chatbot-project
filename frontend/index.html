@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Support Chatbot</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="chat-container">
+        <header class="chat-header">
+            <div class="header-icon">🤖</div>
+            <div>
+                <h1>Virtual Assistant</h1>
+                <p class="status-indicator" id="statusIndicator">● Online</p>
+            </div>
+        </header>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                <div class="message-icon">🤖</div>
+                <div class="message-bubble">
+                    <p>Hello! I'm your virtual assistant. I can help with:</p>
+                    <ul>
+                        <li>💳 Balance inquiries</li>
+                        <li>💸 Transactions & transfers</li>
+                        <li>🔒 Card services</li>
+                        <li>🏦 Loan information</li>
+                        <li>📋 Complaints & support</li>
+                    </ul>
+                    <p>How can I assist you today?</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="escalation-banner" id="escalationBanner" style="display: none;">
+            <span class="escalation-icon">⚠️</span>
+            <span>Connecting to a live agent...</span>
+        </div>
+
+        <div class="chat-input-container">
+            <input
+                type="text"
+                id="messageInput"
+                class="chat-input"
+                placeholder="Type your message here..."
+                autocomplete="off"
+            />
+            <button id="sendButton" class="send-button" title="Send message">
+                ▶
+            </button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
