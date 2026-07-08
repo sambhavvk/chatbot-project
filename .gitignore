@@ -1,1 +1,4 @@
 plan
+/venv
+/models
+__pycache__/

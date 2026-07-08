@@ -199,7 +199,7 @@ def train() -> None:
         learning_rate=CONFIG["learning_rate"],
         warmup_steps=CONFIG["warmup_steps"],
         weight_decay=CONFIG["weight_decay"],
-        evaluation_strategy="steps",
+        eval_strategy="steps",
         eval_steps=CONFIG["eval_steps"],
         save_steps=CONFIG["save_steps"],
         logging_steps=CONFIG["logging_steps"],

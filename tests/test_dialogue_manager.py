@@ -50,7 +50,7 @@ class TestDialogueManager:
         assert "TestUser" in result["response"]
 
     def test_handle_unknown_intent(self, manager):
-        result = manager.handle_message("user1", "xyzzy nothing here")
+        result = manager.handle_message("user1", "asdfghjkl zxcvbnm qwerty")
         assert result["intent"] == "unknown"
         # FallbackHandler response
         assert "rephrase" in result["response"].lower()

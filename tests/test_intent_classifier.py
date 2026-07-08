@@ -23,7 +23,7 @@ class TestMockIntentClassifier:
         assert 0 <= result["confidence"] <= 1
 
     def test_classify_transaction_intent(self, classifier):
-        result = classifier.classify("I want to transfer money to my friend")
+        result = classifier.classify("I want to send a payment to my friend")
         assert result["intent"] == "transaction"
         assert result["confidence"] > 0
 
