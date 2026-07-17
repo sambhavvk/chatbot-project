@@ -1,133 +1,147 @@
-# 🤖 Customer Support Chatbot
+# Banking Customer Support Chatbot
 
-An AI-powered customer support chatbot built with **OOP design patterns**, **NLP**, **NoSQL (DynamoDB)**, and **AWS serverless architecture**. Fine-tunes DistilBERT on banking77 for intent classification, with sentiment escalation, entity extraction, and a full CI/CD pipeline.
+AI-powered banking customer support chatbot built with **Next.js 14**, **Supabase PostgreSQL**, and **TypeScript NLP pipeline**.
 
+## Architecture
 
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- **Python 3.12+**
-- **CUDA 11.8+** (for GPU training on RTX 4060 Ti)
-- **Docker & Docker Compose** (for localstack and containerized deployment)
-- **Git**
-
-## 📡 API Reference
-
-### `POST /chat`
-
-Process a user message and return the chatbot response.
-
-**Request:**
-```json
-{
-  "user_id": "user-123",
-  "message": "What is my account balance?"
-}
+```
+┌─────────────────────────────────────────────────┐
+│  Next.js Frontend (React + Tailwind CSS)        │
+│  ┌───────────────────────────────────────────┐  │
+│  │  ChatWidget → MessageBubble → ChatInput   │  │
+│  └───────────────────────────────────────────┘  │
+│                      │ POST /api/chat            │
+│  ┌───────────────────────────────────────────┐  │
+│  │  API Route (Next.js Route Handler)         │  │
+│  │  ┌─────────────────────────────────────┐  │  │
+│  │  │  DialogueManager (TypeScript)        │  │  │
+│  │  │  ├─ IntentClassifier (keyword NLP)   │  │  │
+│  │  │  ├─ EntityExtractor (regex NER)      │  │  │
+│  │  │  ├─ SentimentAnalyzer (sentiment pkg)│  │  │
+│  │  │  ├─ IntentHandlers (Factory Pattern) │  │  │
+│  │  │  └─ SentimentEscalator (Observer)    │  │  │
+│  │  └─────────────────────────────────────┘  │  │
+│  └───────────────────────────────────────────┘  │
+│                      │                           │
+│  ┌───────────────────────────────────────────┐  │
+│  │  Supabase PostgreSQL                       │  │
+│  │  ├─ conversations                          │  │
+│  │  ├─ escalation_requests                    │  │
+│  │  └─ user_profiles                          │  │
+│  └───────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────┘
 ```
 
-**Response:**
-```json
-{
-  "response": "The current balance for your account is £1,250.75. Is there anything else I can help you with?",
-  "intent": "balance",
-  "confidence": 0.9876,
-  "entities": [
-    {"text": "account", "label": "MONEY", "start": 15, "end": 22}
-  ],
-  "sentiment": {
-    "neg": 0.0,
-    "neu": 0.892,
-    "pos": 0.108,
-    "compound": 0.2732
-  },
-  "escalated": false,
-  "timestamp": "2025-01-15T10:30:00.123456+00:00"
-}
-```
+## Features
 
-### `GET /health`
+- **Intent Classification**: Keyword-based NLP with 8 banking intents (balance, transaction, card, loan, complaint, greeting, goodbye, account)
+- **Named Entity Recognition**: Regex-based extraction for money, dates, account numbers, sort codes, card numbers, emails, phone numbers
+- **Sentiment Analysis**: AFINN-based sentiment scoring with escalation detection
+- **Dialogue Management**: Full pipeline orchestration with Factory (handlers) and Observer (escalation) patterns
+- **Persistent Storage**: Supabase PostgreSQL replacing DynamoDB
+- **Modern UI**: Responsive chat widget with Tailwind CSS, typing indicators, escalation banners
 
-Health check endpoint.
+## Quick Start
 
-**Response:**
-```json
-{
-  "status": "healthy"
-}
-```
-
----
-
-## 🧪 Testing
+### 1. Install Dependencies
 
 ```bash
-# Run all tests
-pytest tests/ -v
-
-# Run with coverage
-pytest tests/ -v --cov=src --cov-report=html
-
-# Run specific test file
-pytest tests/test_intent_classifier.py -v
+npm install
 ```
 
-### Test Coverage
+### 2. Set Up Supabase
 
-| Module | Tests |
-|--------|-------|
-| `test_intent_classifier.py` | Mock classifier accuracy, confidence bounds, unknown intent handling |
-| `test_sentiment_analyzer.py` | Positive/negative/neutral polarity, escalation threshold, custom config |
-| `test_handlers.py` | All handler responses, Factory pattern (creation, caching, registration), FallbackHandler |
-| `test_dialogue_manager.py` | Full pipeline integration, escalation triggering, Observer notifications, error handling |
+1. Go to [supabase.com](https://supabase.com) and create a free account
+2. Create a new project
+3. Go to **SQL Editor** and run the migration from `supabase/migrations/001_create_tables.sql`
+4. Go to **Project Settings → API** and copy your:
+   - **Project URL** (`NEXT_PUBLIC_SUPABASE_URL`)
+   - **Anon public key** (`NEXT_PUBLIC_SUPABASE_ANON_KEY`)
 
----
+### 3. Configure Environment
 
-## 🛠️ Tech Stack
+```bash
+cp .env.local.example .env.local
+```
 
-| Category | Technology | Purpose |
-|----------|-----------|---------|
-| **ML Framework** | PyTorch + Transformers | Fine-tune DistilBERT |
-| **NLP** | spaCy, VADER Sentiment | Entity extraction, sentiment |
-| **Backend** | Python 3.12, FastAPI, uvicorn | REST API server |
-| **Serverless** | AWS Lambda, API Gateway | Cloud deployment |
-| **Database** | Amazon DynamoDB (localstack for dev) | Conversation persistence |
-| **Frontend** | Vanilla HTML/CSS/JS | Chat UI |
-| **Containerization** | Docker, Docker Compose | Reproducible environments |
-| **Testing** | pytest, pytest-mock, pytest-cov | Unit testing, coverage |
-| **CI/CD** | GitHub Actions | Automated testing on push |
-| **Emulation** | localstack | Local AWS service emulation |
+Edit `.env.local` with your Supabase credentials:
 
----
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+```
 
-## 📝 Intent Classes
+### 4. Run Development Server
 
-The system handles these intents (from banking77 dataset):
+```bash
+npm run dev
+```
 
-| Intent | Example Utterance | Handler |
-|--------|------------------|---------|
-| `balance` | "What's my current balance?" | `BalanceHandler` |
-| `transaction` | "I want to transfer £50" | `TransactionHandler` |
-| `card` | "My credit card was stolen" | `CardHandler` |
-| `loan` | "Tell me about mortgage rates" | `LoanHandler` |
-| `complaint` | "I have a serious complaint" | `ComplaintHandler` |
-| `greeting` | "Hello! Good morning" | `GreetingHandler` |
-| `goodbye` | "Bye, see you later" | `GoodbyeHandler` |
-| *unknown* | (anything else) | `FallbackHandler` |
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
----
+## Deployment
 
-## 🏆 Key Features
+### Deploy to Vercel (Free)
 
-- ✅ **GPU-accelerated training** on NVIDIA RTX 4060 Ti
-- ✅ **Clean OOP architecture** with 4 design patterns
-- ✅ **Sentiment-based escalation** with Observer pattern
-- ✅ **NoSQL persistence** with DynamoDB (DAO pattern)
-- ✅ **Serverless deployment** on AWS Lambda + API Gateway
-- ✅ **Full Docker setup** with localstack for local dev
-- ✅ **Interactive CLI** for testing without a frontend
-- ✅ **Responsive chat UI** with typing indicators and escalation banner
-- ✅ **Comprehensive test suite** with >90% coverage
+1. Push your code to GitHub
+2. Go to [vercel.com](https://vercel.com) and import your repository
+3. Add environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
+4. Deploy!
 
----
+### Supabase Database Setup
+
+Run the SQL migration in your Supabase SQL Editor:
+- `supabase/migrations/001_create_tables.sql`
+
+This creates the `conversations`, `escalation_requests`, and `user_profiles` tables with Row Level Security policies.
+
+## Project Structure
+
+```
+├── app/                    # Next.js App Router
+│   ├── api/chat/route.ts   # Chat API endpoint
+│   ├── globals.css         # Global styles (Tailwind)
+│   ├── layout.tsx          # Root layout
+│   └── page.tsx            # Home page
+├── components/             # React components
+│   ├── chat-widget.tsx     # Main chat widget
+│   ├── chat-input.tsx      # Message input
+│   ├── message-bubble.tsx  # Message display
+│   └── escalation-banner.tsx
+├── lib/                    # Business logic
+│   ├── nlp/                # NLP pipeline
+│   │   ├── intent-classifier.ts
+│   │   ├── sentiment-analyzer.ts
+│   │   ├── entity-extractor.ts
+│   │   └── index.ts
+│   ├── dialogue/           # Dialogue management
+│   │   ├── manager.ts
+│   │   ├── handlers.ts
+│   │   ├── escalator.ts
+│   │   └── index.ts
+│   ├── supabase.ts         # Supabase client
+│   └── db.ts               # Database operations (DAO)
+├── supabase/               # Supabase configuration
+│   └── migrations/         # SQL migrations
+├── src/                    # Original Python backend (reference)
+└── frontend/               # Original vanilla frontend (reference)
+```
+
+## Design Patterns
+
+| Pattern | Location | Purpose |
+|---------|----------|---------|
+| Strategy | `lib/nlp/intent-classifier.ts` | Swappable classification strategies |
+| Factory | `lib/dialogue/handlers.ts` | Intent handler creation |
+| Observer | `lib/dialogue/escalator.ts` | Sentiment escalation events |
+| DAO | `lib/db.ts` | Database abstraction layer |
+| Singleton | `app/api/chat/route.ts` | DialogueManager instance |
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: Supabase PostgreSQL
+- **NLP**: Custom TypeScript (sentiment package for AFINN analysis)
+- **Deployment**: Vercel + Supabase (free tier)
